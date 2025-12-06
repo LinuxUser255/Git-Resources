@@ -5,9 +5,6 @@
 **For everyone: student → junior → senior → wizard**
 
 
-```markdown
-# Ultimate Git Cheat Sheet – 2025 Edition
-For everyone: student → junior → senior → wizard
 Perfect for daily or any serious repo
 
 ## Repository Info (MyRepo example)
@@ -147,7 +144,5 @@ alias gclean='git branch --merged main | grep -v "\*\|main\|dev" | xargs -r git 
 
 You now have a cheat sheet that grows with you from first-year CS student to the grizzled maintainer of a 40 k-line security tooling repo.
 
-```
 
 Copy-paste this entire thing into your personal wiki/Notion/Obsidian — it’s the one Git sheet you’ll actually keep forever.
-```
