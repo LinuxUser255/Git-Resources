@@ -15,14 +15,53 @@ Primary branches: main (production), dev (next release), rebrand-myrepo-fleet (l
 
 ### Status & Information – “Where am I and what’s changed?”
 
-| Command                                    | When you use it                                                                                 | Example scenario (CryptoAnalysisBot)                                      | Pro tip for seniors/experts                                      |
+| Command                                    | When you use it                                                                                 | Example scenario (MyProject)                                      | Pro tip for seniors/experts                                      |
 |------------------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------|
 | `git status`                                   | Literally every single time you touch the repo                                                   | “Did I forget to add that new horizon config?”                                   | Use `git status -sb` for ultra-compact view                      |
 | `git branch -vv`                               | You’re unsure if your branch is tracking the right remote or is ahead/behind                    | “Why is my portfolio bugfix not on origin?”                                      | Shows [ahead 3, behind 1] at a glance                            |
-| `git branch -a`                                | You need to see every local + remote branch in one list                                           | “Is someone else already working on aladdin-v2?”                                 | Pipe to grep: `git branch -a | grep aladdin`                     |
+| `git branch -a`                                | You need to see every local + remote branch in one list                                           | “Is someone else already working on new_feature-v2?”                                 | Pipe to grep: `git branch -a | grep new_feature`                     |
 | `git --no-pager log --oneline -10`             | Quick look at recent history without less                                                        | “What was the last time I touched the VaR calculator?”                            | Great in scripts / CI                                            |
 | `git log --oneline --graph main..feature`      | Visualise what your feature branch added compared to main                                        | See exactly what the rebrand branch changed                                      | Use alias `glg`                                                  |
 | `git branch --contains <hash>`                 | Find which branches still have a specific commit (e.g., a hotfix)                                | “Which branches still have that old HOLD-signal bug?”                             | Lifesaver before deleting branches                               |
+
+
+### Using `git -A`
+**`git add -A` – When to use it (and when NOT to)**
+(Short version for every level of developer:**
+
+| Situation | Recommended command | Why |
+|----------|---------------------|-----|
+| You are **100% sure** you want to stage **every single change** in the entire repository (new files, modifications, deletions) | `git add -A`  <br>or the newer synonym `git add .` (Git 2.0+) | Stages everything, no exceptions. Perfect for tiny personal projects or after a big automated refactor/rebrand. |
+| You are in the **root of the repository** and want to stage everything under the current directory (same as -A) | `git add .` | Same effect as `-A` when you are at repo root. Most people type this out of muscle memory. |
+| You are in a **subdirectory** and only want to stage changes under that folder | `git add .` (from inside the subdir) | `git add -A` would still stage the whole repo; `git add .` limits to current dir. |
+| You want to be **safe / deliberate** (99 % of real-world work, especially on team projects or the MyProject) | `git add -p`  <br>or `git add <specific-files…>` | Lets you review hunks interactively or stage only the files you intend. Prevents accidentally committing debug prints, local config, or huge data files. |
+| You just ran `git rm` or deleted files and want Git to notice the deletions | `git add -A` or `git add -u` | `-A` = all (new + modified + deleted)  <br>`-u` = only updates (modified + deleted, ignores brand-new untracked files) |
+
+### Real-world examples from our MyProject
+
+| Scenario | Correct command | Why not just `-A`? |
+|----------|------------------|--------------------|
+| You fixed the portfolio persistence bug in 3 files and want to commit only those | `git add src/portfolio/` or `git add -p` | `-A` would also stage your new `debug_signals.json` (20 MB) and local `.env` |
+| You finished the entire CoolRepo v2 refactor (200+ files changed) and you are absolutely certain nothing else is lying around | `git add -A` → `git commit` | Safe because you already ran `git clean -n` and `git status` showed only intended changes |
+| You are in `src/new_feature/` and only want to stage changes inside that folder | `git add .` (from inside `src/new_feature/`) | `-A` would stage everything in the repo, including unrelated docs |
+| You deleted 15 old prediction JSONs and want Git to register the deletions | `git add -A` or `git add -u` | Both work; `-u` is slightly lighter because it skips brand-new untracked files |
+
+### TL;DR rule I live by after 20+ years
+
+```bash
+# Daily driver (safe, intentional)
+git add -p          # interactive hunk staging – my #1 most used command
+
+# When I really mean “stage absolutely everything right now”
+git add -A          # or just git add . from repo root
+
+# Never blindly run git add -A in a team repo without a quick git status first!
+```
+
+So: `git add -A` is perfect when you intentionally want to commit the entire current state of the repository in one shot (e.g., after a successful automated rebrand, or on a tiny solo script).
+In almost every other situation — especially on the MyProject — reach for `git add -p` or explicit file paths instead. Your teammates (and your future self) will thank you.
+
+
 
 ### Fetching & Pulling – “Bring the world up to date”
 
@@ -36,7 +75,7 @@ Primary branches: main (production), dev (next release), rebrand-myrepo-fleet (l
 
 | Command                                          | When it’s safe and correct to use                                                                 | Real example                                                                        |
 |--------------------------------------------------|---------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| `git push -u origin my-branch`                   | First push of a new branch → sets upstream tracking                                                | `git push -u origin feature/aladdin-dashboard`                                       |
+| `git push -u origin my-branch`                   | First push of a new branch → sets upstream tracking                                                | `git push -u origin feature/new_feature-dashboard`                                       |
 | `git push --force-with-lease`                    | You rebased or amended commits and need to update remote (safer than --force)                     | After interactive rebase cleaning up 15 messy commits                               |
 | `git push origin --delete old-garbage-branch`    | Remote cleanup after the branch was merged and deleted locally                                    | Housekeeping after the rebrand is finished                                           |
 
@@ -53,7 +92,7 @@ Primary branches: main (production), dev (next release), rebrand-myrepo-fleet (l
 
 | Strategy                     | When to pick it                                                                                 | Example command                                                            |
 |------------------------------|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-| Merge (--no-ff)              | You want history to show when a feature was completed (most company policies)                    | `git merge --no-ff feature/aladdin-v2`                                         |
+| Merge (--no-ff)              | You want history to show when a feature was completed (most company policies)                    | `git merge --no-ff feature/new_feature-v2`                                         |
 | Rebase                       | You want a clean, linear history and are still working on the branch                             | `git rebase main` → then force-with-lease push                                 |
 | Interactive rebase (-i)      | Clean up, squash, reorder, edit, or split commits before merging/PR                             | `git rebase -i HEAD~8` → squash 8 tiny “fix typo” commits into one meaningful commit |
 
