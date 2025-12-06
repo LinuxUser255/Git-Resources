@@ -46,7 +46,7 @@ Primary branches: main (production), dev (next release), rebrand-myrepo-fleet (l
 | You are in `src/new_feature/` and only want to stage changes inside that folder | `git add .` (from inside `src/new_feature/`) | `-A` would stage everything in the repo, including unrelated docs |
 | You deleted 15 old prediction JSONs and want Git to register the deletions | `git add -A` or `git add -u` | Both work; `-u` is slightly lighter because it skips brand-new untracked files |
 
-### TL;DR rule I live by after 20+ years
+### TL;DR rule
 
 ```bash
 # Daily driver (safe, intentional)
